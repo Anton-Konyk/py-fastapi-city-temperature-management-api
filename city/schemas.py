@@ -7,7 +7,11 @@ class CityBase(BaseModel):
 
 
 class CityCreate(CityBase):
-    author_id: int
+    pass
+
+
+class CityUpdate(CityBase):
+    pass
 
 
 class City(CityBase):
