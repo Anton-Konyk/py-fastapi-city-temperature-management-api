@@ -1,14 +1,13 @@
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-import schemas
-import models
+from city import schemas, models
 
 
 def create_city(db: Session, city: schemas.CityCreate):
     db_city = models.DBCity(
         name=city.name,
-        bio=city.additional_info,
+        additional_info=city.additional_info,
     )
     db.add(db_city)
     db.commit()
