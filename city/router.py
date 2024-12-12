@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -25,3 +27,12 @@ def create_city(
         )
 
     return crud.create_city(db=db, city=city)
+
+
+@router.get("/cities/", response_model=List[schemas.City])
+def list_cities(
+        skip: int = 0,
+        limit: int = 10,
+        db: Session = Depends(get_db)
+):
+    return crud.get_cities(db, skip=skip, limit=limit)
