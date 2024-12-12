@@ -36,3 +36,13 @@ def list_cities(
         db: Session = Depends(get_db)
 ):
     return crud.get_cities(db, skip=skip, limit=limit)
+
+
+@router.get("/cities/{city_id}/", response_model=schemas.City)
+def read_single_city(city_id: int, db: Session = Depends(get_db)):
+    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+
+    if db_city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    return db_city
