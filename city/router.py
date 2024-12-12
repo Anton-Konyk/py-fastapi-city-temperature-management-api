@@ -62,3 +62,22 @@ def update_city(
     updated_city = crud.update_city(db=db, city_id=city_id, city=update_city)
 
     return updated_city
+
+
+@router.delete("/cities/{city_id}/", status_code=200)
+def delete_city(
+        city_id: int,
+        silent: bool = False,
+        db: Session = Depends(get_db)
+):
+    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+
+    if db_city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    db.delete(db_city)
+    db.commit()
+
+    if silent:
+        return
+    return {"message": f"City with id {city_id} has been successfully deleted"}
