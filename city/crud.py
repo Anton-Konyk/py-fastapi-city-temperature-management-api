@@ -22,6 +22,19 @@ def get_city_by_id(db: Session, city_id: int):
     )
 
 
+def get_city_by_name_additional_info(
+        db: Session,
+        city_name: str,
+        city_additional_info: str
+):
+    return (
+        db.query(models.DBCity).
+        filter((models.DBCity.name == city_name) &
+               (models.DBCity.additional_info == city_additional_info)).
+        first()
+    )
+
+
 def update_city(db: Session, city_id: int, city: schemas.CityUpdate):
     db_city = db.query(models.DBCity).filter(models.DBCity.id == city_id).first()
 
