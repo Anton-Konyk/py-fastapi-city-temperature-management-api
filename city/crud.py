@@ -35,6 +35,10 @@ def get_city_by_name_additional_info(
     )
 
 
+def get_cities(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(models.DBCity).offset(skip).limit(limit).all()
+
+
 def update_city(db: Session, city_id: int, city: schemas.CityUpdate):
     db_city = db.query(models.DBCity).filter(models.DBCity.id == city_id).first()
 
