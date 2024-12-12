@@ -46,3 +46,19 @@ def read_single_city(city_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="City not found")
 
     return db_city
+
+
+@router.put("/cities/{city_id}/", response_model=schemas.City)
+def update_city(
+        city_id: int,
+        update_city: schemas.CityUpdate,
+        db: Session = Depends(get_db)
+):
+    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+
+    if db_city is None:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    updated_city = crud.update_city(db=db, city_id=city_id, city=update_city)
+
+    return updated_city
