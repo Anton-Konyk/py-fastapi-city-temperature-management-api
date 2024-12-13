@@ -27,3 +27,8 @@ async def fetch_temperature(city_name: str) -> float:
             )
         data = response.json()
         return data["main"]["temp"]
+
+
+def get_temperatures(db: Session, skip: int = 0, limit: int = 10):
+    return db.query(models.DBTemperature).offset(skip).limit(limit).all()
+
