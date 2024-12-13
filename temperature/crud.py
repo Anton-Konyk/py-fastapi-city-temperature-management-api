@@ -32,3 +32,11 @@ async def fetch_temperature(city_name: str) -> float:
 def get_temperatures(db: Session, skip: int = 0, limit: int = 10):
     return db.query(models.DBTemperature).offset(skip).limit(limit).all()
 
+
+def get_temperature_by_city_id(db: Session, city_id: int):
+    temperatures = db.query(models.DBTemperature).filter(models.DBTemperature.city_id ==
+                                                         city_id).all()
+    if not temperatures:
+        return None
+
+    return temperatures
