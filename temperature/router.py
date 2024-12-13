@@ -60,3 +60,25 @@ def list_cities(
 ):
     return crud.get_temperatures(db, skip=skip, limit=limit)
 
+
+@router.get(
+    "/temperatures/{city_id}/",
+    response_model=list[schemas.TemperatureCreate]
+)
+def read_temperatures_city(city_id: int, db: Session = Depends(get_db)):
+    db_temps = crud.get_temperature_by_city_id(db=db, city_id=city_id)
+
+    temps = []
+    if db_temps is None:
+        raise HTTPException(status_code=404, detail="City not found")
+
+    for db_temp in db_temps:
+        temps.append(schemas.TemperatureCreate(
+            id=db_temp.id,
+            city_id=db_temp.city_id,
+            city=db_temp.city.name,
+            date_time=db_temp.date_time,
+            temperature=db_temp.temperature
+            ))
+
+    return temps
