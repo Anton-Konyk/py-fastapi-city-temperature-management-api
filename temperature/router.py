@@ -50,3 +50,13 @@ async def update_temperatures(db: Session = Depends(get_db)):
         updated_records=len(temperatures),
         temperatures=temperatures
     )
+
+
+@router.get("/temperatures", response_model=List[schemas.Temperature])
+def list_cities(
+        skip: int = 0,
+        limit: int = 10,
+        db: Session = Depends(get_db)
+):
+    return crud.get_temperatures(db, skip=skip, limit=limit)
+
