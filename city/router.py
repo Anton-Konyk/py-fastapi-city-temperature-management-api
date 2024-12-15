@@ -1,7 +1,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from city import schemas, crud
 from dependencies import get_db
@@ -10,37 +10,37 @@ router = APIRouter()
 
 
 @router.post("/cities/", response_model=schemas.City)
-def create_city(
+async def create_city(
     city: schemas.CityCreate,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ):
-    db_city = crud.get_city_by_name_additional_info(
+    db_city = await crud.get_city_by_name_additional_info(
         db=db,
         city_name=city.name,
         city_additional_info=city.additional_info
     )
-
     if db_city:
         raise HTTPException(
             status_code=400,
             detail="Such city with such additional info already exists"
         )
 
-    return crud.create_city(db=db, city=city)
+    return await crud.create_city(db=db, city=city)
 
 
 @router.get("/cities/", response_model=List[schemas.City])
-def list_cities(
+async def list_cities(
         skip: int = 0,
         limit: int = 10,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    return crud.get_cities(db, skip=skip, limit=limit)
+    result = await crud.get_cities(db, skip=skip, limit=limit)
+    return result
 
 
 @router.get("/cities/{city_id}/", response_model=schemas.City)
-def read_single_city(city_id: int, db: Session = Depends(get_db)):
-    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+async def read_single_city(city_id: int, db: AsyncSession = Depends(get_db)):
+    db_city = await crud.get_city_by_id(db=db, city_id=city_id)
 
     if db_city is None:
         raise HTTPException(status_code=404, detail="City not found")
@@ -49,35 +49,37 @@ def read_single_city(city_id: int, db: Session = Depends(get_db)):
 
 
 @router.put("/cities/{city_id}/", response_model=schemas.City)
-def update_city(
+async def update_city(
         city_id: int,
         update_city: schemas.CityUpdate,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+    db_city = await crud.get_city_by_id(db=db, city_id=city_id)
 
     if db_city is None:
-        raise HTTPException(status_code=404, detail="City not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"City with id {city_id} not found"
+        )
 
-    updated_city = crud.update_city(db=db, city_id=city_id, city=update_city)
+    updated_city = await crud.update_city(db=db, city_id=city_id, city=update_city)
 
     return updated_city
 
 
 @router.delete("/cities/{city_id}/", status_code=200)
-def delete_city(
+async def delete_city(
         city_id: int,
-        silent: bool = False,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    db_city = crud.get_city_by_id(db=db, city_id=city_id)
+    db_city = await crud.get_city_by_id(db=db, city_id=city_id)
 
     if db_city is None:
-        raise HTTPException(status_code=404, detail="City not found")
+        raise HTTPException(
+            status_code=404,
+            detail=f"City with id {city_id} not found"
+        )
 
-    db.delete(db_city)
-    db.commit()
+    result = await crud.delete_city(db=db, db_city=db_city)
 
-    if silent:
-        return
-    return {"message": f"City with id {city_id} has been successfully deleted"}
+    return result
