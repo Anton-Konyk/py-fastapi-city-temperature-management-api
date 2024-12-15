@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from datetime import datetime
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import httpx
 
@@ -29,14 +29,16 @@ async def fetch_temperature(city_name: str) -> float:
         return data["main"]["temp"]
 
 
-def get_temperatures(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.DBTemperature).offset(skip).limit(limit).all()
+async def get_temperatures(db: AsyncSession, skip: int = 0, limit: int | None = 10):
+    query = await db.execute(
+        select(models.DBTemperature).offset(skip).limit(limit)
+    )
+    return query.scalars().all()
 
 
-def get_temperature_by_city_id(db: Session, city_id: int):
-    temperatures = db.query(models.DBTemperature).filter(models.DBTemperature.city_id ==
-                                                         city_id).all()
-    if not temperatures:
-        return None
+async def get_temperature_by_city_id(db: AsyncSession, city_id: int):
+    query = select(models.DBTemperature).where(models.DBTemperature.city_id ==
+                                               city_id)
+    result = await db.execute(query)
 
-    return temperatures
+    return result.scalars().all()
