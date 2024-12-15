@@ -2,8 +2,9 @@ from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from city.crud import get_cities, get_city_by_id
 from city.models import DBCity
 from dependencies import get_db
 from temperature import crud, models, schemas
@@ -16,10 +17,10 @@ router = APIRouter()
     "/temperatures/update",
     response_model=schemas.TemperatureUpdateResponse
 )
-async def update_temperatures(db: Session = Depends(get_db)):
+async def update_temperatures(db: AsyncSession = Depends(get_db)):
 
-    cities = db.query(DBCity).all()
-    print(f"Cities: {cities}")
+    cities = await get_cities(db=db, limit=None)
+
     if not cities:
         raise HTTPException(status_code=404, detail="No cities found in the database.")
 
@@ -41,9 +42,9 @@ async def update_temperatures(db: Session = Depends(get_db)):
                 temperature=new_temperature.temperature
             ))
         except HTTPException as e:
-            print(e.detail)
+            raise e.detail
 
-    db.commit()
+    await db.commit()
 
     return schemas.TemperatureUpdateResponse(
         message="Temperatures updated successfully",
@@ -53,32 +54,40 @@ async def update_temperatures(db: Session = Depends(get_db)):
 
 
 @router.get("/temperatures", response_model=List[schemas.Temperature])
-def list_cities(
+async def list_temperatures(
         skip: int = 0,
         limit: int = 10,
-        db: Session = Depends(get_db)
+        db: AsyncSession = Depends(get_db)
 ):
-    return crud.get_temperatures(db, skip=skip, limit=limit)
+    return await crud.get_temperatures(db, skip=skip, limit=limit)
 
 
 @router.get(
     "/temperatures/{city_id}/",
-    response_model=list[schemas.TemperatureCreate]
+    response_model=schemas.TemperatureResultsResponse
 )
-def read_temperatures_city(city_id: int, db: Session = Depends(get_db)):
-    db_temps = crud.get_temperature_by_city_id(db=db, city_id=city_id)
+async def read_temperatures_city(
+        city_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    db_temps = await crud.get_temperature_by_city_id(db=db, city_id=city_id)
 
     temps = []
-    if db_temps is None:
+    if not db_temps:
         raise HTTPException(status_code=404, detail="City not found")
 
+    city = await get_city_by_id(db=db, city_id=city_id)
+
     for db_temp in db_temps:
-        temps.append(schemas.TemperatureCreate(
+        temps.append(schemas.TemperatureResults(
             id=db_temp.id,
             city_id=db_temp.city_id,
-            city=db_temp.city.name,
             date_time=db_temp.date_time,
             temperature=db_temp.temperature
             ))
 
-    return temps
+    return schemas.TemperatureResultsResponse(
+        message="Temperatures got successfully",
+        city=city.name,
+        temperatures=temps
+    )
