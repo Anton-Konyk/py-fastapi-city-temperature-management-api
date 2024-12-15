@@ -17,6 +17,12 @@ class TemperatureResults(TemperatureBase):
     id: int
 
 
+class TemperatureResultsResponse(BaseModel):
+    message: str
+    city: str
+    temperatures: List[TemperatureResults]
+
+
 class TemperatureUpdateResponse(BaseModel):
     message: str
     updated_records: int
