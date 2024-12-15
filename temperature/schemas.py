@@ -13,6 +13,10 @@ class TemperatureCreate(TemperatureBase):
     city: Any
 
 
+class TemperatureResults(TemperatureBase):
+    id: int
+
+
 class TemperatureUpdateResponse(BaseModel):
     message: str
     updated_records: int
