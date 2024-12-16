@@ -6,7 +6,6 @@ from sqlalchemy import (
     UniqueConstraint,
     Float
 )
-from sqlalchemy.orm import relationship
 
 from database import Base
 
