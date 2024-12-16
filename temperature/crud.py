@@ -1,12 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+
+from dotenv import load_dotenv
+from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import httpx
 
-from temperature import schemas, models
+from temperature import models
 
-OPENWEATHER_API_KEY = "dc41438b531b4d89df81363c55dad4e4"
+
+load_dotenv()
+
+OPENWEATHER_API_KEY = os.getenv("OPENWEATHER_API_KEY")
 OPENWEATHER_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
