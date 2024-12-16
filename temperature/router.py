@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from city.crud import get_cities, get_city_by_id
-from city.models import DBCity
 from dependencies import get_db
 from temperature import crud, models, schemas
 
